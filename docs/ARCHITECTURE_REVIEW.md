@@ -86,3 +86,5 @@ Checked 2026-09-21. Hosted limits and APIs change; verify against the deployment
 - [Vercel function limits](https://vercel.com/docs/functions/limitations): bounded execution means a seven-day loop needs durable scheduling and resumable steps.
 - [Supabase SSR clients](https://supabase.com/docs/guides/auth/server-side/creating-a-client): separate browser/server factories; session refresh and verified authentication belong in M1 before private routes.
 - [Supabase API keys](https://supabase.com/docs/guides/getting-started/api-keys) and [RLS](https://supabase.com/docs/guides/database/postgres/row-level-security): use publishable keys with user-scoped clients; privileged credentials bypass RLS and must not reach the browser or models.
+
+- [Inngest documentation](https://www.inngest.com/docs) and [Temporal documentation](https://docs.temporal.io/): candidates for durable execution evaluation, not selected M0 dependencies.
