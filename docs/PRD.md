@@ -260,7 +260,8 @@ Examples:
 - mass outreach
 - delete production data
 - access/export sensitive personal data
-- represent a human identity deceptively
+
+Constitution violations (including deceptive identity, fabricated traction and spam) are prohibited, not actions an approval can authorise.
 
 Every approval produces an immutable event with actor, timestamp, requested action and outcome.
 
@@ -493,7 +494,7 @@ Before Experiment 001:
 5. Scout + Evidence.
 6. Sceptic.
 7. Strategist + experiment plans.
-8. approval engine.
+8. approval queue and external adapters (deny-by-default guards already exist in the kernel).
 9. Builder specification workflow.
 10. Documentarian.
 11. public sanitised timeline.
@@ -515,3 +516,11 @@ These should be resolved by implementation evidence rather than architecture pre
 After N experiments, can we show that IMPOSSIBLE requires fewer human interventions and/or less human time to produce increasingly strong evidence of genuine demand?
 
 That—not number of generated startups—is the long-term measure of the system.
+
+## 22. Foundation review clarifications
+
+See [architecture review](ARCHITECTURE_REVIEW.md). M0 is only Issue #1; it does not implement the M1 kernel or agents. Pause/kill, fixed deadline semantics and deny-by-default execution guards must exist before autonomous work. Pausing retains the original deadline and current stage. Approval binds the exact proposed action and expires; execution must recheck current authority.
+
+State mutations and audit events commit atomically. Future jobs must recover safely after crashes; uncertain external outcomes require reconciliation before retry. Capture versioned beliefs, evidence references, contradictions, outcomes and attributable human effort as those features arrive. Retain concise rationale, never private chain-of-thought.
+
+**Product question for Experiment 001 planning:** V1 Builder delivers a build specification. To observe real behaviour, the operator must approve a concrete human-assisted build/distribution and measurement path, with all human effort logged. This clarification does not expand M0 or silently authorise autonomous deployment.
