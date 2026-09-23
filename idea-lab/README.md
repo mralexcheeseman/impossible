@@ -25,7 +25,7 @@ npm run build
 1. Create a **private** repository from the reviewed code (or deliberately make this repository private). Do not copy secrets into Git. The live runner refuses public repositories.
 2. Import the private repository in Vercel. Set **Root Directory: idea-lab** and framework **Next.js**. Set `LAB_ACCESS_SECRET` to a random 32+ character value, and `NEXT_PUBLIC_LAB_REPOSITORY=owner/repository`. Protect preview deployments with Vercel Authentication; keep demo mode off for live work.
 3. In GitHub Actions secrets add `OPENAI_API_KEY` using a dedicated provider project. API billing is separate from ChatGPT. Do not put the model key or GitHub write credentials in the Vercel app.
-4. Enable “Allow GitHub Actions to create and approve pull requests” in repository Actions settings (the workflow only creates drafts and never approves). Set repository variable `LAB_ENABLED=true`. Optionally set `LAB_MODEL` to a Responses-compatible model that supports web search, image inputs and structured output. Default adapter: OpenAI / `gpt-4.1`.
+4. Enable “Allow GitHub Actions to create and approve pull requests” in repository Actions settings (the workflow only creates drafts and never approves). Without it the run fails with HTTP 403 at the final pull-request step, after the model calls have been paid for and the day's run has been claimed. Set repository variable `LAB_ENABLED=true`. Optionally set `LAB_MODEL` to a Responses-compatible model that supports web search, image inputs and structured output. Default adapter: OpenAI / `gpt-4.1`.
 5. Merge the workflow onto the default branch, then run **Idea Lab → Run workflow**. Inspect the run issue, generated draft PR, Vercel preview and visual-check artifact. Validate one live run before relying on the schedule.
 
 No activation has happened merely because these files exist.
@@ -55,6 +55,7 @@ On a live idea, enter scores, decision, note and scope. “Prepare feedback” c
 - Research and feedback are stored as private repository data and issues. The renderer escapes text; model output is never executed as code.
 - Events are appended as issue comments; admins can still edit them. This is an operational history, not a tamper-proof compliance ledger.
 - Model input/output token counts are recorded. Exact costs and conversion outcomes are not yet calculated.
+- Draft PRs opened by the workflow use `GITHUB_TOKEN`, so GitHub does not start other workflows for them: **Check Idea Lab** will not run on lab PRs. Vercel previews still build.
 - Live API, GitHub scheduled-run and Vercel integration checks require configured credentials. Mock-provider tests do not establish those integrations work.
 
 ## Architecture

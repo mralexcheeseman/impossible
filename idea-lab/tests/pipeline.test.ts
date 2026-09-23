@@ -3,9 +3,17 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { z } from 'zod';
 import { assertRunAllowed, feedbackContext, generateBatch } from '../lib/pipeline';
-import { Batch, Feedback, feedbackFromIssue, verifySources } from '../lib/schema';
+import {
+  Batch,
+  Critique,
+  Feedback,
+  Idea,
+  Landing,
+  feedbackFromIssue,
+  verifySources,
+} from '../lib/schema';
 import { session, validSession } from '../lib/auth';
-import type { ModelProvider } from '../lib/provider';
+import { strictJsonSchema, type ModelProvider } from '../lib/provider';
 const a = Batch.parse(JSON.parse(await readFile('data/batches/example-fieldnote.json', 'utf8')));
 const b = Batch.parse(JSON.parse(await readFile('data/batches/example-signal-room.json', 'utf8')));
 const feedback = Feedback.parse({
@@ -169,4 +177,15 @@ test('An explicit revision takes priority and consumes page-specific feedback', 
   assert.match(builderPrompt, /Make the headline more specific/);
   assert.equal(batch.events.at(-1)?.detail, '42');
   assert.equal(batch.ideas.length, 3);
+});
+
+test('Model schemas drop keywords that strict structured outputs reject', () => {
+  for (const schema of [z.object({ ideas: z.array(Idea).length(2) }).strict(), Landing, Critique]) {
+    const text = JSON.stringify(strictJsonSchema(schema));
+    for (const keyword of ['$schema', 'minLength', 'maxLength', 'starts_with'])
+      assert.ok(!text.includes(keyword), `${keyword} left in schema`);
+    assert.ok(text.includes('"additionalProperties":false'));
+  }
+  const url = JSON.stringify(strictJsonSchema(z.object({ u: z.url().max(9) })));
+  assert.ok(url.includes('At most 9 characters.'));
 });

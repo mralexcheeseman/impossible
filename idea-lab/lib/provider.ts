@@ -13,6 +13,42 @@ export interface ModelProvider {
     images?: string[];
   }): Promise<ModelResult<T>>;
 }
+// Formats accepted by OpenAI structured outputs in strict mode.
+const STRICT_FORMATS = new Set([
+  'date-time',
+  'time',
+  'date',
+  'duration',
+  'email',
+  'hostname',
+  'ipv4',
+  'ipv6',
+  'uuid',
+]);
+
+// Strict mode rejects keywords outside its supported subset. Drop them and move string length
+// limits into descriptions; the Zod schema still enforces every constraint on the response.
+export function strictJsonSchema(schema: z.ZodType): Record<string, unknown> {
+  const clean = (node: unknown): unknown => {
+    if (Array.isArray(node)) return node.map(clean);
+    if (!node || typeof node !== 'object') return node;
+    const out: Record<string, unknown> = {};
+    const hints: string[] = [];
+    for (const [key, value] of Object.entries(node)) {
+      if (key === '$schema') continue;
+      if (key === 'minLength' || key === 'maxLength') {
+        hints.push(`${key === 'minLength' ? 'At least' : 'At most'} ${value} characters.`);
+        continue;
+      }
+      if (key === 'format' && !STRICT_FORMATS.has(String(value))) continue;
+      out[key] = clean(value);
+    }
+    if (hints.length) out.description = [out.description, ...hints].filter(Boolean).join(' ');
+    return out;
+  };
+  return clean(z.toJSONSchema(schema)) as Record<string, unknown>;
+}
+
 export class ResponsesProvider implements ModelProvider {
   private calls = 0;
   constructor(
@@ -58,12 +94,15 @@ export class ResponsesProvider implements ModelProvider {
             type: 'json_schema',
             name: 'agent_output',
             strict: true,
-            schema: z.toJSONSchema(schema),
+            schema: strictJsonSchema(schema),
           },
         },
       }),
     });
-    if (!response.ok) throw new Error(`Model API returned HTTP ${response.status}`);
+    if (!response.ok)
+      throw new Error(
+        `Model API returned HTTP ${response.status}: ${(await response.text()).slice(0, 500)}`,
+      );
     const result = await response.json();
     if (result.status !== 'completed') throw new Error('Model response incomplete');
     let output = '';
