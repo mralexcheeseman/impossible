@@ -1,0 +1,3 @@
+import {NextRequest,NextResponse} from 'next/server';
+import {COOKIE,enabledSecret,equal,session,sameOrigin} from '@/lib/auth';
+export async function POST(req:NextRequest){if(!sameOrigin(req.headers))return new Response('Invalid origin',{status:403});const s=enabledSecret();if(!s)return new Response('Set LAB_ACCESS_SECRET first.',{status:503});const form=await req.formData();if(!equal(String(form.get('password')??''),s))return NextResponse.redirect(new URL('/login?error=1',req.headers.get('origin')!),303);const response=NextResponse.redirect(new URL('/',req.headers.get('origin')!),303);response.cookies.set(COOKIE,session(s),{httpOnly:true,secure:process.env.NODE_ENV==='production',sameSite:'strict',path:'/',maxAge:7*86400});return response;}

@@ -1,0 +1,80 @@
+{
+  "id": "example-small-hours",
+  "createdAt": "2026-09-23T00:00:00Z",
+  "mode": "example",
+  "ideas": [
+    {
+      "id": "small-hours",
+      "name": "Small Hours",
+      "tagline": "Make room for the project you keep putting off.",
+      "audience": "Independent makers",
+      "problem": "Side projects may stall because the next step feels too large or unclear.",
+      "solution": "A calm daily prompt that turns a rough intention into a single small action.",
+      "whyNow": "Test whether makers want a simpler alternative to large planning tools.",
+      "distribution": "Recruit five willing makers from a relevant community after permission.",
+      "priceHypothesis": "Test a one-off purchase; price sensitivity is unknown.",
+      "falsificationTest": "Give five makers a five-day manual version; stop if fewer than two return without reminders.",
+      "uncertainties": [
+        "The problem has not been validated with intended users.",
+        "Existing alternatives and willingness to pay require research."
+      ],
+      "sources": [
+        {
+          "url": "https://vercel.com/docs/git",
+          "title": "Deployment capability reference",
+          "claim": "Illustrative infrastructure context only. This is not evidence of customer demand for this example.",
+          "kind": "context"
+        }
+      ]
+    }
+  ],
+  "challenges": [
+    {
+      "ideaId": "small-hours",
+      "score": 65,
+      "verdict": "research",
+      "rationale": "Illustrative score only. This concept needs customer research before a commercial test.",
+      "strongestObjection": "An existing tool or a simple manual process may already solve the problem adequately."
+    }
+  ],
+  "pages": [
+    {
+      "ideaId": "small-hours",
+      "theme": "studio",
+      "eyebrow": "FOR THE THING YOU KEEP MEANING TO MAKE",
+      "headline": "A little time. Something of your own.",
+      "subhead": "Turn the idea at the back of your mind into one small, useful step today.",
+      "cta": "Imagine your first step",
+      "benefits": [
+        {
+          "title": "Name the thing",
+          "body": "Give the important detail a place to live, with enough context to use it later."
+        },
+        {
+          "title": "Make the step smaller",
+          "body": "Work through one focused question and leave with a clearer direction."
+        },
+        {
+          "title": "Leave a trail",
+          "body": "Turn the idea into a small experiment you can actually try."
+        }
+      ],
+      "steps": [
+        "Bring one real problem you want to work on.",
+        "Work through a short, focused first session.",
+        "Leave with one useful next action."
+      ],
+      "closing": "Start small. Learn something useful.",
+      "designRationale": "Illustrative art direction to calibrate typography, hierarchy and tone with Alex."
+    }
+  ],
+  "critique": null,
+  "events": [
+    {
+      "at": "2026-09-23T00:00:00Z",
+      "type": "example.created",
+      "detail": "Hand-authored fixture. No research, demand validation or agent run claimed."
+    }
+  ],
+  "feedbackCount": 0
+}

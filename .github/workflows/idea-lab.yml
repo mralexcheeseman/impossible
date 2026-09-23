@@ -1,0 +1,73 @@
+name: Idea Lab
+on:
+  schedule:
+    - cron: '17 4 * * 1,3,5'
+  workflow_dispatch:
+    inputs:
+      build_page:
+        description: Build one qualifying page concept
+        type: boolean
+        default: true
+permissions:
+  contents: read
+concurrency:
+  group: idea-lab
+  cancel-in-progress: false
+jobs:
+  run:
+    if: vars.LAB_ENABLED == 'true' && github.event.repository.private == true
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    defaults:
+      run:
+        working-directory: idea-lab
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: idea-lab/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck && npm test
+      - run: npx playwright install --with-deps chromium
+      - name: Start local preview renderer
+        run: |
+          npm run dev > /tmp/idea-lab-next.log 2>&1 &
+          for attempt in $(seq 1 40); do
+            if curl --fail --silent http://127.0.0.1:3000/ > /dev/null; then exit 0; fi
+            sleep 2
+          done
+          exit 1
+      - name: Set build cadence
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REQUEST_BUILD: ${{ inputs.build_page }}
+        run: |
+          build=false
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            build="$REQUEST_BUILD"
+          elif [ "$(date -u +%u)" = "1" ] || [ "$(date -u +%u)" = "5" ]; then
+            build=true
+          fi
+          echo "LAB_BUILD=$build" >> "$GITHUB_ENV"
+      - name: Research, challenge and build
+        run: npm run lab:run
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          LAB_MODEL: ${{ vars.LAB_MODEL || 'gpt-4.1' }}
+          LAB_ENABLED: ${{ vars.LAB_ENABLED }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: idea-lab-visual-checks
+          path: idea-lab/test-results
+          if-no-files-found: ignore
+          retention-days: 14

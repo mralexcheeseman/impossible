@@ -1,0 +1,80 @@
+{
+  "id": "example-signal-room",
+  "createdAt": "2026-09-23T00:00:00Z",
+  "mode": "example",
+  "ideas": [
+    {
+      "id": "signal-room",
+      "name": "Signal Room",
+      "tagline": "Find the change that matters to your clients.",
+      "audience": "Small marketing teams",
+      "problem": "Teams may spend more time collecting AI news than translating it into a useful client decision.",
+      "solution": "A short evidence-led briefing linking a change, its commercial implication and a next action.",
+      "whyNow": "Test the hypothesis that information overload increases demand for concise judgement.",
+      "distribution": "Offer a sample briefing to five small agencies for feedback.",
+      "priceHypothesis": "Test a paid weekly briefing; do not assume subscription demand.",
+      "falsificationTest": "Ask readers to name a decision they changed; stop if the briefing only generates compliments.",
+      "uncertainties": [
+        "The problem has not been validated with intended users.",
+        "Existing alternatives and willingness to pay require research."
+      ],
+      "sources": [
+        {
+          "url": "https://vercel.com/docs/git",
+          "title": "Deployment capability reference",
+          "claim": "Illustrative infrastructure context only. This is not evidence of customer demand for this example.",
+          "kind": "context"
+        }
+      ]
+    }
+  ],
+  "challenges": [
+    {
+      "ideaId": "signal-room",
+      "score": 65,
+      "verdict": "research",
+      "rationale": "Illustrative score only. This concept needs customer research before a commercial test.",
+      "strongestObjection": "An existing tool or a simple manual process may already solve the problem adequately."
+    }
+  ],
+  "pages": [
+    {
+      "ideaId": "signal-room",
+      "theme": "signal",
+      "eyebrow": "LESS NOISE. MORE JUDGEMENT.",
+      "headline": "Know what changes your next move.",
+      "subhead": "A considered briefing for teams who need to turn emerging technology into useful decisions.",
+      "cta": "See the proposition",
+      "benefits": [
+        {
+          "title": "Start with evidence",
+          "body": "Give the important detail a place to live, with enough context to use it later."
+        },
+        {
+          "title": "Challenge the headline",
+          "body": "Work through one focused question and leave with a clearer direction."
+        },
+        {
+          "title": "Choose your next move",
+          "body": "Turn the idea into a small experiment you can actually try."
+        }
+      ],
+      "steps": [
+        "Bring one real problem you want to work on.",
+        "Work through a short, focused first session.",
+        "Leave with one useful next action."
+      ],
+      "closing": "Start small. Learn something useful.",
+      "designRationale": "Illustrative art direction to calibrate typography, hierarchy and tone with Alex."
+    }
+  ],
+  "critique": null,
+  "events": [
+    {
+      "at": "2026-09-23T00:00:00Z",
+      "type": "example.created",
+      "detail": "Hand-authored fixture. No research, demand validation or agent run claimed."
+    }
+  ],
+  "feedbackCount": 0
+}

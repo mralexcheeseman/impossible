@@ -1,0 +1,80 @@
+{
+  "id": "example-fieldnote",
+  "createdAt": "2026-09-23T00:00:00Z",
+  "mode": "example",
+  "ideas": [
+    {
+      "id": "fieldnote",
+      "name": "Fieldnote",
+      "tagline": "Turn customer observations into sharper creative briefs.",
+      "audience": "Independent strategists",
+      "problem": "Strategy teams may lose useful customer observations between research and creative briefing.",
+      "solution": "A compact workspace linking an observation to a tension, a creative direction and a test.",
+      "whyNow": "Test whether greater access to AI research creates demand for better synthesis.",
+      "distribution": "Interview five independent strategists through existing professional contacts.",
+      "priceHypothesis": "Test \u00a315 per month; willingness to pay is unknown.",
+      "falsificationTest": "Ask five strategists to use one real brief; stop if none returns to use it again.",
+      "uncertainties": [
+        "The problem has not been validated with intended users.",
+        "Existing alternatives and willingness to pay require research."
+      ],
+      "sources": [
+        {
+          "url": "https://vercel.com/docs/git",
+          "title": "Deployment capability reference",
+          "claim": "Illustrative infrastructure context only. This is not evidence of customer demand for this example.",
+          "kind": "context"
+        }
+      ]
+    }
+  ],
+  "challenges": [
+    {
+      "ideaId": "fieldnote",
+      "score": 65,
+      "verdict": "research",
+      "rationale": "Illustrative score only. This concept needs customer research before a commercial test.",
+      "strongestObjection": "An existing tool or a simple manual process may already solve the problem adequately."
+    }
+  ],
+  "pages": [
+    {
+      "ideaId": "fieldnote",
+      "theme": "editorial",
+      "eyebrow": "A BETTER STARTING POINT",
+      "headline": "Good strategy starts with noticing.",
+      "subhead": "Keep the observations that matter. Connect them to a clearer brief and a better question.",
+      "cta": "Explore the concept",
+      "benefits": [
+        {
+          "title": "Keep the useful detail",
+          "body": "Give the important detail a place to live, with enough context to use it later."
+        },
+        {
+          "title": "Find the human tension",
+          "body": "Work through one focused question and leave with a clearer direction."
+        },
+        {
+          "title": "Write a sharper brief",
+          "body": "Turn the idea into a small experiment you can actually try."
+        }
+      ],
+      "steps": [
+        "Bring one real problem you want to work on.",
+        "Work through a short, focused first session.",
+        "Leave with one useful next action."
+      ],
+      "closing": "Start small. Learn something useful.",
+      "designRationale": "Illustrative art direction to calibrate typography, hierarchy and tone with Alex."
+    }
+  ],
+  "critique": null,
+  "events": [
+    {
+      "at": "2026-09-23T00:00:00Z",
+      "type": "example.created",
+      "detail": "Hand-authored fixture. No research, demand validation or agent run claimed."
+    }
+  ],
+  "feedbackCount": 0
+}
