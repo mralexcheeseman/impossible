@@ -1,4 +1,69 @@
 'use client';
-import {useState} from 'react';
-import type {LandingType} from '@/lib/schema';
-export function LandingPage({page,name}:{page:LandingType;name:string}){const [open,setOpen]=useState(false);return <div className={`landing ${page.theme}`}><nav className="landing-nav"><strong>{name}<span>® concept</span></strong><a href="#how">How it works ↗</a></nav><section className="landing-hero"><div><p className="section-label">{page.eyebrow}</p><h1>{page.headline}</h1><p className="subhead">{page.subhead}</p><button className="primary" onClick={()=>setOpen(!open)} aria-expanded={open} aria-controls="concept-note">{page.cta} <span>↗</span></button>{open&&<p id="concept-note" className="notice" role="status">You’re viewing a product concept. This preview does not collect signups. Alex will decide whether to run a real test.</p>}</div><div className="art" aria-hidden="true"><div className="art-orbit"/><span className="art-glyph">{page.theme==='signal'?'↗':page.theme==='studio'?'✳':'a'}</span><span className="art-caption">A different way forward.</span></div></section><section className="benefits" aria-label="The proposition">{page.benefits.map((b,i)=><article key={b.title}><span className="number">0{i+1}</span><h2>{b.title}</h2><p>{b.body}</p></article>)}</section><section className="how" id="how"><div><p className="section-label">A SIMPLE START</p><h2>{page.closing}</h2></div><ol>{page.steps.map(s=><li key={s}>{s}</li>)}</ol></section><footer className="landing-footer"><strong>{name}</strong><span>Independent concept · Built in Idea Lab</span></footer></div>}
+import { useState } from 'react';
+import type { LandingType } from '@/lib/schema';
+export function LandingPage({ page, name }: { page: LandingType; name: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className={`landing ${page.theme}`}>
+      <nav className="landing-nav">
+        <strong>
+          {name}
+          <span>® concept</span>
+        </strong>
+        <a href="#how">How it works ↗</a>
+      </nav>
+      <section className="landing-hero">
+        <div>
+          <p className="section-label">{page.eyebrow}</p>
+          <h1>{page.headline}</h1>
+          <p className="subhead">{page.subhead}</p>
+          <button
+            className="primary"
+            onClick={() => setOpen(!open)}
+            aria-expanded={open}
+            aria-controls="concept-note"
+          >
+            {page.cta} <span>↗</span>
+          </button>
+          {open && (
+            <p id="concept-note" className="notice" role="status">
+              You’re viewing a product concept. This preview does not collect signups. Alex will
+              decide whether to run a real test.
+            </p>
+          )}
+        </div>
+        <div className="art" aria-hidden="true">
+          <div className="art-orbit" />
+          <span className="art-glyph">
+            {page.theme === 'signal' ? '↗' : page.theme === 'studio' ? '✳' : 'a'}
+          </span>
+          <span className="art-caption">A different way forward.</span>
+        </div>
+      </section>
+      <section className="benefits" aria-label="The proposition">
+        {page.benefits.map((b, i) => (
+          <article key={b.title}>
+            <span className="number">0{i + 1}</span>
+            <h2>{b.title}</h2>
+            <p>{b.body}</p>
+          </article>
+        ))}
+      </section>
+      <section className="how" id="how">
+        <div>
+          <p className="section-label">A SIMPLE START</p>
+          <h2>{page.closing}</h2>
+        </div>
+        <ol>
+          {page.steps.map((s) => (
+            <li key={s}>{s}</li>
+          ))}
+        </ol>
+      </section>
+      <footer className="landing-footer">
+        <strong>{name}</strong>
+        <span>Independent concept · Built in Idea Lab</span>
+      </footer>
+    </div>
+  );
+}

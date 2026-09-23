@@ -1,19 +1,172 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {readFile} from 'node:fs/promises';
-import {z} from 'zod';
-import {assertRunAllowed,feedbackContext,generateBatch} from '../lib/pipeline';
-import {Batch,Feedback,feedbackFromIssue,verifySources} from '../lib/schema';
-import {session,validSession} from '../lib/auth';
-import type {ModelProvider} from '../lib/provider';
-const a=Batch.parse(JSON.parse(await readFile('data/batches/example-fieldnote.json','utf8')));
-const b=Batch.parse(JSON.parse(await readFile('data/batches/example-signal-room.json','utf8')));
-const feedback=Feedback.parse({version:1,ideaId:'fieldnote',decision:'revise',idea:3,design:4,copy:2,usability:4,note:'Make the headline more specific.',scope:'this-page'});
-test('Live-run gates fail closed for public, paused and overloaded repositories',()=>{for(const input of [{enabled:false,privateRepo:true,openDrafts:0},{enabled:true,privateRepo:false,openDrafts:0},{enabled:true,privateRepo:true,openDrafts:6}])assert.throws(()=>assertRunAllowed(input));assert.doesNotThrow(()=>assertRunAllowed({enabled:true,privateRepo:true,openDrafts:5}));});
-test('Sessions reject tampering, expiry and rotation',()=>{const key='a'.repeat(40);const token=session(key,1000);assert.equal(validSession(token,key,2000),true);assert.equal(validSession(token,key,1000+8*86400000),false);assert.equal(validSession(token+'x',key,2000),false);assert.equal(validSession(token,'b'.repeat(40),2000),false);});
-test('Only validated owner feedback affects the next run',()=>{const body='```json\n'+JSON.stringify(feedback)+'\n```';assert.deepEqual(feedbackFromIssue(body,'alex','alex'),feedback);assert.equal(feedbackFromIssue(body,'outsider','alex'),null);assert.equal(feedbackFromIssue('```json\n{}\n```','alex','alex'),null);assert.equal(feedbackContext([feedback],'different').length,0);assert.equal(feedbackContext([{...feedback,scope:'general-preference'}],'different').length,1);});
-test('Invented evidence URLs are rejected',()=>{assert.throws(()=>verifySources(a.ideas,['https://example.com/']));assert.doesNotThrow(()=>verifySources(a.ideas,[a.ideas[0].sources[0].url]));});
-function fixtureProvider(reject=false):ModelProvider{let n=0;return {async generate<T>({schema}:{schema:z.ZodType<T>}){const steps=[{report:'Fixture research only.'},{ideas:[a.ideas[0],b.ideas[0]]},{challenges:[{...a.challenges[0],ideaId:'run-fieldnote',score:80,verdict:reject?'reject':'build'},{...b.challenges[0],ideaId:'run-signal-room',verdict:'research'}]},{...a.pages[0],ideaId:'run-fieldnote'},{pass:true,strengths:['Clear hierarchy'],changes:[],proposedRule:'Keep reviewing examples.'}];const value=schema.parse(steps[n++]);return {value,inputTokens:1,outputTokens:1,sourceUrls:['https://vercel.com/docs/git']};}};}
-test('Complete pipeline returns a validated batch with independent critique and audit events',async()=>{let captures=0;const batch=await generateBatch({id:'run',provider:fixtureProvider(),build:true,contracts:'Test',standards:'Test',history:[],feedback:[],capture:async()=>{captures++;return ['desktop','mobile'];}});assert.equal(batch.pages.length,1);assert.equal(batch.critique?.pass,true);assert.equal(captures,1);assert.equal(batch.events.filter(e=>e.type==='agent.completed').length,5);});
-test('Rejection stops the builder regardless of schedule',async()=>{const batch=await generateBatch({id:'run',provider:fixtureProvider(true),build:true,contracts:'Test',standards:'Test',history:[],feedback:[],capture:async()=>{throw new Error('Must not render');}});assert.equal(batch.pages.length,0);assert.equal(batch.events.at(-1)?.type,'build.skipped');});
-test('An explicit revision takes priority and consumes page-specific feedback',async()=>{let n=0;let builderPrompt='';const provider:ModelProvider={async generate<T>(task:{schema:z.ZodType<T>;prompt:string}){const steps=[{report:'Fixture research only.'},{ideas:[a.ideas[0],b.ideas[0]]},{challenges:[{...a.challenges[0],ideaId:'run-fieldnote'},{...b.challenges[0],ideaId:'run-signal-room'}]},a.pages[0],{pass:true,strengths:[],changes:[],proposedRule:'Review more pages.'}];if(n===3)builderPrompt=task.prompt;return {value:task.schema.parse(steps[n++]),inputTokens:0,outputTokens:0,sourceUrls:['https://vercel.com/docs/git']};}};const batch=await generateBatch({id:'run',provider,build:true,contracts:'Test',standards:'Test',history:[],feedback:[feedback],revision:{idea:a.ideas[0],page:a.pages[0],challenge:{...a.challenges[0],verdict:'build'},feedbackId:42},capture:async()=>['desktop','mobile']});assert.equal(batch.pages[0].ideaId,'fieldnote');assert.match(builderPrompt,/Make the headline more specific/);assert.equal(batch.events.at(-1)?.detail,'42');assert.equal(batch.ideas.length,3);});
+import { readFile } from 'node:fs/promises';
+import { z } from 'zod';
+import { assertRunAllowed, feedbackContext, generateBatch } from '../lib/pipeline';
+import { Batch, Feedback, feedbackFromIssue, verifySources } from '../lib/schema';
+import { session, validSession } from '../lib/auth';
+import type { ModelProvider } from '../lib/provider';
+const a = Batch.parse(JSON.parse(await readFile('data/batches/example-fieldnote.json', 'utf8')));
+const b = Batch.parse(JSON.parse(await readFile('data/batches/example-signal-room.json', 'utf8')));
+const feedback = Feedback.parse({
+  version: 1,
+  ideaId: 'fieldnote',
+  decision: 'revise',
+  idea: 3,
+  design: 4,
+  copy: 2,
+  usability: 4,
+  note: 'Make the headline more specific.',
+  scope: 'this-page',
+});
+test('Live-run gates fail closed for public, paused and overloaded repositories', () => {
+  for (const input of [
+    { enabled: false, privateRepo: true, openDrafts: 0 },
+    { enabled: true, privateRepo: false, openDrafts: 0 },
+    { enabled: true, privateRepo: true, openDrafts: 6 },
+  ])
+    assert.throws(() => assertRunAllowed(input));
+  assert.doesNotThrow(() => assertRunAllowed({ enabled: true, privateRepo: true, openDrafts: 5 }));
+});
+test('Sessions reject tampering, expiry and rotation', () => {
+  const key = 'a'.repeat(40);
+  const token = session(key, 1000);
+  assert.equal(validSession(token, key, 2000), true);
+  assert.equal(validSession(token, key, 1000 + 8 * 86400000), false);
+  assert.equal(validSession(token + 'x', key, 2000), false);
+  assert.equal(validSession(token, 'b'.repeat(40), 2000), false);
+});
+test('Only validated owner feedback affects the next run', () => {
+  const body = '```json\n' + JSON.stringify(feedback) + '\n```';
+  assert.deepEqual(feedbackFromIssue(body, 'alex', 'alex'), feedback);
+  assert.equal(feedbackFromIssue(body, 'outsider', 'alex'), null);
+  assert.equal(feedbackFromIssue('```json\n{}\n```', 'alex', 'alex'), null);
+  assert.equal(feedbackContext([feedback], 'different').length, 0);
+  assert.equal(
+    feedbackContext([{ ...feedback, scope: 'general-preference' }], 'different').length,
+    1,
+  );
+});
+test('Invented evidence URLs are rejected', () => {
+  assert.throws(() => verifySources(a.ideas, ['https://example.com/']));
+  assert.doesNotThrow(() => verifySources(a.ideas, [a.ideas[0].sources[0].url]));
+});
+function fixtureProvider(reject = false): ModelProvider {
+  let n = 0;
+  return {
+    async generate<T>({ schema }: { schema: z.ZodType<T> }) {
+      const steps = [
+        { report: 'Fixture research only.' },
+        { ideas: [a.ideas[0], b.ideas[0]] },
+        {
+          challenges: [
+            {
+              ...a.challenges[0],
+              ideaId: 'run-fieldnote',
+              score: 80,
+              verdict: reject ? 'reject' : 'build',
+            },
+            { ...b.challenges[0], ideaId: 'run-signal-room', verdict: 'research' },
+          ],
+        },
+        { ...a.pages[0], ideaId: 'run-fieldnote' },
+        {
+          pass: true,
+          strengths: ['Clear hierarchy'],
+          changes: [],
+          proposedRule: 'Keep reviewing examples.',
+        },
+      ];
+      const value = schema.parse(steps[n++]);
+      return {
+        value,
+        inputTokens: 1,
+        outputTokens: 1,
+        sourceUrls: ['https://vercel.com/docs/git'],
+      };
+    },
+  };
+}
+test('Complete pipeline returns a validated batch with independent critique and audit events', async () => {
+  let captures = 0;
+  const batch = await generateBatch({
+    id: 'run',
+    provider: fixtureProvider(),
+    build: true,
+    contracts: 'Test',
+    standards: 'Test',
+    history: [],
+    feedback: [],
+    capture: async () => {
+      captures++;
+      return ['desktop', 'mobile'];
+    },
+  });
+  assert.equal(batch.pages.length, 1);
+  assert.equal(batch.critique?.pass, true);
+  assert.equal(captures, 1);
+  assert.equal(batch.events.filter((e) => e.type === 'agent.completed').length, 5);
+});
+test('Rejection stops the builder regardless of schedule', async () => {
+  const batch = await generateBatch({
+    id: 'run',
+    provider: fixtureProvider(true),
+    build: true,
+    contracts: 'Test',
+    standards: 'Test',
+    history: [],
+    feedback: [],
+    capture: async () => {
+      throw new Error('Must not render');
+    },
+  });
+  assert.equal(batch.pages.length, 0);
+  assert.equal(batch.events.at(-1)?.type, 'build.skipped');
+});
+test('An explicit revision takes priority and consumes page-specific feedback', async () => {
+  let n = 0;
+  let builderPrompt = '';
+  const provider: ModelProvider = {
+    async generate<T>(task: { schema: z.ZodType<T>; prompt: string }) {
+      const steps = [
+        { report: 'Fixture research only.' },
+        { ideas: [a.ideas[0], b.ideas[0]] },
+        {
+          challenges: [
+            { ...a.challenges[0], ideaId: 'run-fieldnote' },
+            { ...b.challenges[0], ideaId: 'run-signal-room' },
+          ],
+        },
+        a.pages[0],
+        { pass: true, strengths: [], changes: [], proposedRule: 'Review more pages.' },
+      ];
+      if (n === 3) builderPrompt = task.prompt;
+      return {
+        value: task.schema.parse(steps[n++]),
+        inputTokens: 0,
+        outputTokens: 0,
+        sourceUrls: ['https://vercel.com/docs/git'],
+      };
+    },
+  };
+  const batch = await generateBatch({
+    id: 'run',
+    provider,
+    build: true,
+    contracts: 'Test',
+    standards: 'Test',
+    history: [],
+    feedback: [feedback],
+    revision: {
+      idea: a.ideas[0],
+      page: a.pages[0],
+      challenge: { ...a.challenges[0], verdict: 'build' },
+      feedbackId: 42,
+    },
+    capture: async () => ['desktop', 'mobile'],
+  });
+  assert.equal(batch.pages[0].ideaId, 'fieldnote');
+  assert.match(builderPrompt, /Make the headline more specific/);
+  assert.equal(batch.events.at(-1)?.detail, '42');
+  assert.equal(batch.ideas.length, 3);
+});

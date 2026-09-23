@@ -10,7 +10,9 @@
     "test": "node --import tsx --test tests/*.test.ts",
     "lab:run": "node --import tsx scripts/run.ts",
     "lab:check": "node --import tsx scripts/check-pages.ts",
-    "smoke": "node --import tsx scripts/smoke.ts"
+    "smoke": "node --import tsx scripts/smoke.ts",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "next": "16.3.6",
@@ -22,9 +24,10 @@
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
-    "typescript": "^5.9.0",
+    "playwright": "^1.58.0",
+    "prettier": "3.9.9",
     "tsx": "^4.20.0",
-    "playwright": "^1.58.0"
+    "typescript": "^5.9.0"
   },
   "type": "module"
 }

@@ -13,7 +13,9 @@ Initial brief, awaiting Alex's scored examples.
 - Human feedback outranks automated aesthetic scores. Test preference changes against past examples before making them universal.
 
 ## Learning protocol
+
 Every run reads this file and the most recent owner-authored structured feedback issues. Store before/after pages in separate pull requests. A visual critic proposes a rule, but cannot edit these standards. Promote a repeated, useful preference with a reviewed change to this file. Keep novelty: choose a different direction where audience and proposition justify it.
 
 ## Measurement
+
 Track Alex's design rating, revision count and pursue/reject decision per idea. AI scores measure triage only, not demand or conversion. An attractive page is not evidence of demand.
