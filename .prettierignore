@@ -6,3 +6,4 @@ package-lock.json
 next-env.d.ts
 # Documentation is edited substantively, not reformatted wholesale.
 **/*.md
+supabase/migrations/
