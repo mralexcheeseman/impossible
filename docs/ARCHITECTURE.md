@@ -184,6 +184,6 @@ Keep sensitive evidence bodies in access-controlled records with retention/redac
 
 ## 15. Milestone boundaries and decisions
 
-M0 exposes only a static shell and unused Supabase client factories. No auth, private data, protected commands, domain schemas, agents or external action execution are implemented. M1 must add verified operator authorisation, session refresh, RLS and transactional invariants before any private feature. Model-call budgets are separate from the acquisition budget.
+M0 supplied the static shell. M1 adds verified operator authorisation, session refresh, RLS and transactional experiment commands with immutable audit/intervention records. A single SQL snapshot supplies private Control Room data. Approval storage is present, but all external execution remains disabled. Agents and durable jobs are M2+ work. Model-call budgets are separate from the acquisition budget. See ADR 0003 and the operator runbook for implementation and deployment limits.
 
 Future Builder execution uses isolated workspaces and per-venture credentials/resources. Untrusted code and retrieved text cannot alter policy or access core secrets. See [architecture review](ARCHITECTURE_REVIEW.md) and [ADRs](adr/README.md).
