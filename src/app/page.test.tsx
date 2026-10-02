@@ -9,7 +9,7 @@ it("renders an honest foundation without database configuration or operational c
   vi.stubEnv("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", "");
   const html = renderToStaticMarkup(<Home />);
   expect(html).toContain("IMPOSSIBLE");
-  expect(html).toContain("No experiment has been started.");
+  expect(html).toContain("Experiments are managed privately.");
   expect(html).toContain("<main>");
   expect(html).not.toMatch(/<button|<form|START COMPANY/);
 });

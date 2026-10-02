@@ -53,9 +53,13 @@ V1 does **not** need to autonomously make money. It needs to prove that the oper
 
 See [docs/PRD.md](docs/PRD.md).
 
-## Local development (M0)
+## Current implementation — M1
 
-Prerequisites: Node.js 22.20.0 (see `.nvmrc`) and npm 10+. With nvm installed:
+M0 is merged. M1 adds a private operator Control Room, Supabase password sign-in, database-backed operator authorisation, transactional experiment commands, an append-only ledger, intervention records and approval storage. No agents or external execution adapters are enabled. The public page does not reveal experiment state.
+
+## Local development
+
+Prerequisites: Node.js 22.20.0 (see `.nvmrc`) and npm 10+.
 
 ```sh
 nvm install
@@ -64,19 +68,9 @@ npm ci
 npm run dev
 ```
 
-Open <http://localhost:3000>. The M0 shell runs and builds without credentials, network data or a database. It deliberately shows no active experiment and offers no operational controls. Operator authentication, database migrations and real experiment state are M1 work.
+Open <http://localhost:3000>. The public shell and setup-pending login page work without credentials. To use the Control Room, follow [the operator runbook](docs/OPERATIONS.md) to apply migrations, provision one operator and configure Supabase.
 
-Optional Supabase configuration:
-
-```sh
-cp .env.example .env.local
-```
-
-Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` from the Supabase project's Connect dialog. Use an HTTPS origin, or HTTP localhost for local development. Factories require a modern `sb_publishable_...` key; legacy JWT anon keys are intentionally not supported. Never place a secret/service-role key in a `NEXT_PUBLIC_` variable: Next.js embeds these values in browser builds. Runtime validation is not a substitute for keeping secrets out of build configuration.
-
-For a local Supabase instance, install the [Supabase CLI](https://supabase.com/docs/guides/local-development/cli/getting-started) and its supported container runtime, then run `supabase init` and `supabase start` locally and copy the local URL and publishable key. This optional step is not needed for M0 checks. Do not commit ad-hoc local schema changes: M1 will introduce reviewed configuration and migrations, RLS policies and database tests. For a hosted development project, use the dashboard-provided public values. Never point previews/tests at production data.
-
-`src/lib/supabase/client.ts` provides a browser factory; `server.ts` provides a fresh request-scoped factory for cookie-writable Server Actions/Route Handlers. Both are unused setup boundaries. The server factory intentionally propagates cookie-write errors. Before using private Server Components, M1 must add session-refresh Proxy integration, verified identity, explicit operator authorisation and RLS. A client instance does not authorise access.
+Copy `.env.example` to `.env.local` and set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. Only modern `sb_publishable_...` keys are supported. Never put a privileged key in a public environment variable. Preview environments must use development data, never production credentials.
 
 ## Checks
 
@@ -89,21 +83,25 @@ npm run build
 npm start
 ```
 
-`npm run typecheck` generates Next.js route types first, so it works on a clean clone before a build. `npm test` is a non-watching unit suite for honest shell rendering, configuration failures and cookie/client boundaries; it does not claim live Supabase/auth coverage. `npm run test:watch` is available during development. CI runs installation and all five checks on pull requests and main. The production build needs no remote fonts or credentials.
+`npm run typecheck` generates Next.js route types before checking. Tests cover configuration, cookie forwarding, verified operator membership, private-route refresh, domain input and actual SQL transitions/RLS/audit atomicity. PGlite needs no container runtime. CI additionally runs `npm run test:postgres` against disposable PostgreSQL 17 to test simultaneous independent requests. See the runbook before running that command locally.
 
-## Vercel deployment
+## Deployment
 
-Import this repository into Vercel, select the Next.js preset, root directory `.` and Node.js 22.x. Use `npm ci` to install and `npm run build` to build; keep the framework's default output directory. No `vercel.json` or external resources are needed for the M0 shell. Optional public environment values must be configured separately per environment and require a rebuild when changed. Do not provision privileged credentials for M0.
+Import the repository into Vercel with the Next.js preset, root `.`, Node.js 22.x, install `npm ci`, build `npm run build`, and default output. No `vercel.json` is needed. Configure the project's public environment variables per environment and rebuild after changes. Apply the migration and provision the operator separately; deploying a UI does not provision a database.
 
-After deployment, verify `/` renders the foundation and an unknown route returns 404. Deployment is a separate operator action; a successful local build or CI run does not prove a deployment occurred. Before private features ship, M1 must supply operator auth, deny-by-default RLS, migrations, session refresh and access-control tests. See [architecture review](docs/ARCHITECTURE_REVIEW.md) and [decisions](docs/adr/README.md).
+Follow the [staging checklist](docs/OPERATIONS.md) before starting a real experiment. A production build/CI pass is not a claim of deployed or hosted-auth validation.
 
-## Implementation map and dependencies
+## Code boundaries
 
-- `src/app/`: static shell and global presentation; no simulated experiment state.
-- `src/lib/supabase/`: explicit public configuration and browser/server setup boundaries.
-- `.github/workflows/ci.yml`: reproducible checks with read-only repository permissions and no application secrets.
-- `docs/adr/`: architectural decisions and milestone boundaries.
+- `src/app/`: public shell, login, private Control Room and server actions.
+- `src/domain/`: validated command/data contracts, UI transition affordances and deny-by-default execution skeleton.
+- `src/lib/auth/`: server-verified identity plus database operator membership.
+- `src/lib/experiments/`: validated private read model.
+- `src/lib/supabase/`, `src/proxy.ts`: user-scoped cookie clients and session refresh; no service-role key.
+- `supabase/migrations/`: authoritative transactional state machine, privileges and RLS.
+- `tests/kernel.test.ts`: migration tests against PGlite and CI PostgreSQL.
+- `docs/adr/`: architectural decisions; `docs/OPERATIONS.md`: bootstrap and recovery.
 
-Next.js/React implement the requested UI; Supabase JS/SSR supply official cookie-aware clients; `server-only` prevents server imports in client bundles. TypeScript and React/Node types provide static checks, ESLint/Next rules check framework conventions, Vitest runs unit tests, and Prettier checks formatting. Dependencies are pinned with a committed lockfile. No agent framework, model SDK, UI kit, analytics service or orchestration infrastructure is installed.
+Zod validates untrusted commands and database responses. Supabase CLI is pinned for migrations; PGlite and pg are test-only dependencies for SQL fidelity and real concurrency tests. No agent framework, model SDK, vector infrastructure or external action adapter is installed.
 
-Known tooling debt: ESLint is pinned to 9.39.5 because the React/import/accessibility plugins bundled by `eslint-config-next@16.3.5` do not support ESLint 10 (verified by dependency checks and a failing rule load). ESLint 9 is deprecated upstream. Upgrade the lint stack together when compatible; do not disable rules or force incompatible peer versions.
+Known tooling debt: ESLint 9 remains pinned for compatibility with the bundled Next.js lint plugins; upgrade the lint stack together without suppressing rules. Next.js is patched to 16.3.8 following GHSA-vcvr-r3jv-pc5j (the app does not use the affected ImageResponse API).

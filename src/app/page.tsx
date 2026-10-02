@@ -7,7 +7,9 @@ export default function Home() {
         <Link className="wordmark" href="/" aria-label="IMPOSSIBLE home">
           IMPOSSIBLE<span aria-hidden="true">.</span>
         </Link>
-        <span className="status">Foundation / M0</span>
+        <Link className="status" href="/control">
+          Open Control Room
+        </Link>
       </header>
       <section className="intro" aria-labelledby="mission">
         <p className="eyebrow">An experiment in entrepreneurship</p>
@@ -22,10 +24,10 @@ export default function Home() {
       <section className="experiment" aria-labelledby="experiment-title">
         <div>
           <p className="eyebrow">Experiment status</p>
-          <h2 id="experiment-title">No experiment has been started.</h2>
+          <h2 id="experiment-title">Experiments are managed privately.</h2>
           <p>
-            The foundation is in place. Experiment controls will arrive with the
-            next milestone.
+            Sign in to start an experiment, inspect its evidence trail and
+            control its progress.
           </p>
         </div>
         <div className="principle">
