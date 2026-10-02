@@ -27,13 +27,13 @@ Control Room / Public Timeline
 - Supabase Postgres + Auth
 - Zod schemas
 - model-provider adapter
-- background execution chosen only when synchronous/serverless execution becomes insufficient
+- durable execution selected by a recovery spike before background agents (M2); no runner dependency in M0
 
 Avoid premature distributed-agent infrastructure.
 
 ## 3. Event-led design
 
-Every material domain change emits an event in the same logical operation where practical.
+Every material domain change, its ordered audit event, and any dispatch intent must commit in one database transaction. Use current-state tables plus an append-only audit ledger; full event sourcing is not required. Unique command IDs prevent duplicate domain mutations. Serialise sequence allocation within each experiment; application roles cannot update or delete audit records.
 
 Events have:
 - monotonically ordered sequence within experiment
@@ -59,7 +59,7 @@ DRAFT
 → DECIDING
 → COMPLETED
 
-PAUSED can interrupt active stages. KILLED is terminal.
+Persist lifecycle status separately from stage. PAUSED retains the interrupted stage and original deadline and occupies the single active experiment slot. KILLED is terminal. Resume must revalidate the deadline. After expiry, block new venture work while allowing reconciliation and final analysis.
 
 Transition validation belongs in code, not agent prompts.
 
@@ -86,7 +86,9 @@ Each proposed external/consequential Action has a risk classification.
 
 GREEN can execute automatically if policy permits.
 AMBER creates Approval and waits in V1.
-RED always creates Approval and waits.
+RED always creates Approval and waits, unless the action is prohibited by the Constitution (for example deceptive identity or spam), in which case it is rejected outright.
+
+Bind approval to an immutable action payload/version, target, policy version and expiry. Recheck authority, lifecycle, deadline and budget at execution. Changes invalidate approval. Unknown action types default to blocked.
 
 Approval decision and subsequent execution are separate events. Approval does not imply execution succeeded.
 
@@ -130,7 +132,9 @@ V1 can start with explicit jobs and persisted statuses. Requirements that may la
 - long research fan-out
 - autonomous seven-day operation
 
-The database remains the source of durable state regardless.
+The database remains the source of durable state regardless. Before background agents, persist job status, attempts, next run time, lease expiry, fencing/version token, input/output references and errors. Commit dispatch intent with domain state; recover expired leases with bounded retry and spend limits. A stale worker must not commit after pause/kill or a newer lease.
+
+External actions require stable idempotency keys and recorded receipts. Unknown outcomes require reconciliation before retry, not an exactly-once promise. Pause/kill blocks new work and requests cancellation; already submitted external effects may still complete and must be recorded. Never hold an HTTP request open for a seven-day experiment.
 
 ## 11. Repository strategy
 
@@ -169,3 +173,17 @@ Track:
 - external action results
 
 The system should eventually answer: exactly why did Experiment 17 cost more and require more human intervention than Experiment 16?
+
+## 14. Learning and narrative data contracts
+
+Introduce with their owning milestones: versioned hypotheses/predictions with confidence, outcome target and horizon; concise rationale and supporting/contradicting evidence IDs; Sceptic objections linked to later outcomes; provider/model/prompt/schema/policy versions; metric provenance, denominators, observation windows and deduplication keys. Never store private chain-of-thought. Unknown values remain null/unknown, not fabricated zeroes.
+
+Interventions identify actor, type (approval, correction, repair, override), reason, related run/decision and measured or estimated minutes. Avoid double-counting approval and intervention events. The Documentarian uses the beliefs and evidence available at the time, plus subsequent outcomes, with explicit claim references.
+
+Keep sensitive evidence bodies in access-controlled records with retention/redaction rules, referenced by the ledger. An authorised deletion can retain a non-sensitive audit marker without retaining the deleted personal data.
+
+## 15. Milestone boundaries and decisions
+
+M0 exposes only a static shell and unused Supabase client factories. No auth, private data, protected commands, domain schemas, agents or external action execution are implemented. M1 must add verified operator authorisation, session refresh, RLS and transactional invariants before any private feature. Model-call budgets are separate from the acquisition budget.
+
+Future Builder execution uses isolated workspaces and per-venture credentials/resources. Untrusted code and retrieved text cannot alter policy or access core secrets. See [architecture review](ARCHITECTURE_REVIEW.md) and [ADRs](adr/README.md).

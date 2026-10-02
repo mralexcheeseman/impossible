@@ -30,7 +30,7 @@ For each task:
 3. State assumptions in the PR/commit description.
 4. Implement one bounded vertical slice.
 5. Add or update tests.
-6. Run lint/typecheck/tests.
+6. Run lint/typecheck/tests and the production build.
 7. Report exactly what changed, what remains, and any risk introduced.
 
 Do not opportunistically refactor unrelated code.
@@ -93,7 +93,9 @@ Relevant tests must pass, error states must be handled, events must be emitted w
 
 ## First implementation target
 
-Build **Milestone 0/1 only** before adding autonomous web research:
+Issue #1 is **Milestone 0 only**: application shell, scripts, environment example, Supabase browser/server factories, CI and setup instructions. Do not implement auth, migrations, experiments or agents in M0.
+
+Complete **Milestone 1 separately** before adding autonomous web research:
 
 - app boots
 - Supabase schema/migrations exist
@@ -107,3 +109,16 @@ Build **Milestone 0/1 only** before adding autonomous web research:
 - tests for transitions and risk gates
 
 Once this foundation is trustworthy, add Scout.
+
+## Architecture and implementation boundaries
+
+Read `docs/ARCHITECTURE_REVIEW.md` and relevant `docs/adr/` records. Record substantive architecture changes as concise ADRs; do not silently change product scope.
+
+- UI and route handlers call domain services; agents return validated proposals, never protected mutations.
+- State, audit events and dispatch intents are transactional. Application roles cannot rewrite audit history.
+- Before background agents, test duplicate delivery, expired leases, stale worker results, pause/kill races and deadline expiry. External unknown outcomes require reconciliation before retry.
+- Approvals bind exact actions, policy versions and expiry; prohibited actions stay prohibited. Revalidate at execution.
+- Add RLS allow/deny and operator-authorisation tests with M1; test approval consumption and payload changes before external adapters run.
+- Preserve versioned rationale/evidence/outcome links and attributable interventions; never private chain-of-thought.
+- Do not execute venture code with core credentials. Future Builder work must be isolated and scoped.
+- M0 Supabase factories are setup boundaries, not authentication or permission guards. Never treat them as proof of operator access.
